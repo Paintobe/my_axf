@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'contents',   #首页
+    'market',   #闪购页面
 ]
 
 MIDDLEWARE = [

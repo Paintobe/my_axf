@@ -24,7 +24,7 @@ $(function () {
 
         $span_sort_rule.removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
 
-    })
+    });
 
     $("#all_types_container").click(function () {
 
@@ -38,7 +38,7 @@ $(function () {
 
         $span.removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
 
-    })
+    });
 
 
     $("#sort_rule").click(function () {
@@ -66,7 +66,7 @@ $(function () {
         $span_all_type.removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
 
 
-    })
+    });
 
     $("#sort_rule_container").click(function () {
 
@@ -80,42 +80,15 @@ $(function () {
 
         $span.removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
 
-    })
+    });
 
-
-    $(".subShopping").click(function () {
-        console.log('sub');
-
-
-        // var goodsid = $add.attr("goodsid");
-        // var goodsid = $add.prop("goodsid");
-        //
-    })
-
+    //商品增加的点击事件
     $(".addShopping").click(function () {
-        console.log('add');
-
-        var $add = $(this);
-
-        // console.log($add.attr('class'));
-        // console.log($add.prop('class'));
-        //
-        // console.log($add.attr('goodsid'));
-        // console.log($add.prop('goodsid'));
-
-        var goodsid = $add.attr('goodsid');
-
-        $.get('/axf/addtocart/', {'goodsid': goodsid}, function (data) {
-            console.log(data);
-
-            if (data['status'] === 302){
-                window.open('/axf/login/', target="_self");
-            }else if(data['status'] === 200){
-                $add.prev('span').html(data['c_goods_num']);
-            }
-
-        })
-
+        //找到商品数量
+        var num = parseInt($(this).siblings("span").text());
+        // console.log(typeof num);
+        num += 1;
+        $(this).siblings("span").text(num)
     })
 
-})
+});

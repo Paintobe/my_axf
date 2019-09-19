@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+    {% block jscss %}
+
+    <link rel="stylesheet" href="/static/axf/main/css/market.css">
+
+    <script type="text/javascript" src="/static/js/swiper.jquery.js"></script>
+    <script type="text/javascript" src="/static/axf/main/js/market.js"></script>
+
+    {% endblock %}
+
+
+{% block main %}
+
+<div id="market">
+
+    <aside>
+        <ul>
+            {% for ft in foodtype %}
+            <li>
+                <a href="{% url 'market:index' ft.typeid 0 0 %}">{{ ft.typename }}</a>
+                {% if cid == ft.typeid %}
+                    <span class="yellowSlide"></span>
+                {% endif %}
+
+            </li>
+            {% endfor %}
+
+
+
+        </ul>
+    </aside>
+
+
+    <section>
+        <nav>
+            <ul>
+                <li id="all_types"><span>{{ twoName }} <span class="glyphicon glyphicon-chevron-down"></span></span></li>
+                <li id="sort_rule"><span>{{ sortName }} <span class="glyphicon glyphicon-chevron-down"></span></span></li>
+            </ul>
+        </nav>
+
+        <menu>
+            <ul>
+                {% for good in goods %}
+
+                <li>
+                    <a href="#">
+                        <img src="{{ good.productimg }}" alt=''>
+                        <div class="shoppingInfo">
+                            <h6>{{ good.productlongname }}</h6>
+                            <p class="detailTag">
+                            </p>
+                            <p class="unit">{{ good.specifics }}</p>
+                            <p class="price">
+                                <span>{{ good.price }}</span>
+                                <s>{{ good.marketprice }}</s>
+                            </p>
+                        </div>
+                    </a>
+
+                    <section>
+                        <button goodsid="" class="subShopping">－</button>
+                        <span>0</span>
+                        <button goodsid="" class="addShopping">＋</button>
+                    </section>
+                </li>
+                {% endfor %}
+
+
+            </ul>
+            <div id="all_types_container">
+                <div>
+                    {% for k,v in childcateDict.items %}
+                    <a href="{% url 'market:index' cid k 0 %}">
+                        {% if twoid == k %}
+                            <button class="btn btn-success">{{ v }}</button>
+                        {% else %}
+                            <button class="btn btn-default">{{ v }}</button>
+                        {% endif %}
+
+                    </a>
+                    {% endfor %}
+
+
+                </div>
+            </div>
+
+            <div id="sort_rule_container">
+                <div>
+
+                    {% for orders in order_data %}
+
+                    <a href="{% url 'market:index' cid twoid orders.1 %}">
+                    {% if sortid == orders.1 %}
+                        <button class="btn btn-success">{{ orders.0 }}</button>
+                    {% else %}
+                        <button class="btn btn-default">{{ orders.0 }}</button>
+                    {% endif %}
+                    </a>
+
+                    {% endfor %}
+
+
+
+                </div>
+            </div>
+        </menu>
+
+    </section>
+
+
+</div>
+
+{% endblock %}
+
+{#当点击+号时，需要将数量加一，并将商品id，数量，默认选中状态保存在cookie中#}
+
