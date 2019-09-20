@@ -82,13 +82,6 @@ $(function () {
 
     });
 
-    //商品增加的点击事件
-    $(".addShopping").click(function () {
-        //找到商品数量
-        var num = parseInt($(this).siblings("span").text());
-        // console.log(typeof num);
-        num += 1;
-        $(this).siblings("span").text(num)
-    })
+
 
 });

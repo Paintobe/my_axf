@@ -60,9 +60,9 @@
                     </a>
 
                     <section>
-                        <button goodsid="" class="subShopping">－</button>
+                        <button goodsid="{{ good.id }}" class="subShopping">－</button>
                         <span>0</span>
-                        <button goodsid="" class="addShopping">＋</button>
+                        <button goodsid="{{ good.id }}" class="addShopping">＋</button>
                     </section>
                 </li>
                 {% endfor %}
@@ -111,6 +111,69 @@
 
 
 </div>
+
+    <script>
+    $(function(){
+        {#商品增加的点击事件#}
+        $(".addShopping").click(function () {
+            {#找到商品数量#}
+            var num = parseInt($(this).siblings("span").text());
+            {#console.log(typeof num);#}
+            num += 1;
+            $(this).siblings("span").text(num);
+
+
+            {#获取商品id和数量#}
+            var gid = $(this).attr("goodsid");
+            var count = num;
+
+            $.ajax({
+                url:{% url 'market:savadata' %},
+                type:'post',
+                data:{
+                    "gid" : gid,
+                    "count" : count
+                },
+                dataType : 'json',
+                headers : {'X-CSRFToken':'{{  csrf_token  }}'},
+                success : function (data) {
+
+                }
+            })
+        });
+
+        {#商品减少的点击事件#}
+        $(".subShopping").click(function () {
+            {#找到商品数量#}
+            var num = parseInt($(this).siblings("span").text());
+            {#console.log(typeof num);#}
+            if (num == 0){
+                return
+            }
+            num -= 1;
+            $(this).siblings("span").text(num);
+
+            {#获取商品id和数量#}
+            var gid = $(this).attr("goodsid");
+            var count = num;
+
+            $.ajax({
+                url:{% url 'market:savadata' %},
+                type:'post',
+                data:{
+                    "gid" : gid,
+                    "count" : count
+                },
+                dataType : 'json',
+                headers : {'X-CSRFToken':'{{  csrf_token  }}'},
+                success : function (data) {
+
+                }
+            })
+        })
+    })
+    
+    </script>
 
 {% endblock %}
 

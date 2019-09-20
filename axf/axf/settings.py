@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'contents',   #首页
     'market',   #闪购页面
+    'carts'  #购物车页面
 ]
 
 MIDDLEWARE = [

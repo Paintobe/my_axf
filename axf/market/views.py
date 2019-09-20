@@ -1,4 +1,6 @@
-from django.http import HttpResponse
+import json
+
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
@@ -67,3 +69,36 @@ def index(request,typeid,twoid,sortid):
     }
 
     return render(request,'market.html',context)
+
+
+def savadata(request):
+    #接受数据
+    gid = request.POST.get('gid')
+    count = request.POST.get('count')
+    selected = request.POST.get('selected','1')#默认选中
+    # print(gid,count,selected)
+
+    #判断cookie中数据，有数据相同需要覆盖，没有需要新增
+    cookie_data = request.COOKIES.get('cookie_data')
+
+
+    if cookie_data:
+        # 存在cookie
+        cookie_data = json.loads(cookie_data)
+        cookie_data[gid] = {'count':count,'selected':selected}
+    else:
+        #不存在则新增
+        #将数据保存在cookie中
+        #{'gid':{'count':'数量','selected':'选中状态'}}
+        cookie_data = {gid:{'count':count,'selected':selected}}
+
+    #如果商品数量为0,则删除该商品
+    if count=='0':
+        del cookie_data[gid]
+
+    #将cookie_data转为json字符串
+    cookie_data = json.dumps(cookie_data)
+    res = JsonResponse({'data':'ok'})
+
+    res.set_cookie('cookie_data',cookie_data)
+    return res

@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+
+
+{% block jscss %}
+
+    <link rel="stylesheet" href="/static/axf/main/css/cart.css">
+
+
+{% endblock %}
+
+{% block main %}
+
+<div id="cart">
+    <h3>Cart</h3>
+    <div class="full">
+        <section>
+            <ul>
+                <li>收&nbsp;&nbsp;货&nbsp;&nbsp;人:&nbsp;Rock</li>
+                <li>电&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;话:&nbsp;110</li>
+                <li>地&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;址:&nbsp;宝盛里</li>
+            </ul>
+
+            <div class="bill">
+
+                <p>闪送超市</p>
+                <p>0元起送满30免运费22:00前可送达</p>
+                <a href="#">凑单专区</a>
+
+            </div>
+
+            <div class="delivery">
+                <span>收货时间</span>
+                <span>一小时内送达</span>
+                <a href="#">可预订&gt;</a>
+            </div>
+
+            <div class="delivery">
+                <span>收获备注</span>
+                <input type="text" placeholder="可输入100字以内的特殊要求">
+            </div>
+
+            <ul>
+                {% for data in data_list %}
+
+
+                <li class="menuList" cartid="{{ data.id }}">
+                    <div class="confirm">
+
+                        {% if data.selected == '1' %}
+                            <input type="checkbox" checked class="select_check" goodsid="{{ data.id }}"/>
+                        {% else %}
+                            <input type="checkbox" class="select_check" goodsid="{{ data.id }}"/>
+                        {% endif %}
+
+                    </div>
+
+                    <a href="#">
+                        <img src="{{ data.img }}" alt="">
+                        <p>{{ data.name }}</p>
+                        <p class="">¥<span class="cartPrice">{{ data.price }}</span></p>
+                    </a>
+
+                    <section>
+                        <button class="subShopping" goodsid="{{ data.id }}">-</button>
+                        <span class="cartCount">{{ data.num }}</span>
+                        <button class="addShopping" goodsid="{{ data.id }}">+</button>
+                    </section>
+
+                </li>
+                {% endfor %}
+
+
+
+            </ul>
+
+            <div class="payTheBill">
+                <div class="all_select">
+                    <input type="checkbox" checked class="select_all_check"/>
+                </div>
+
+                <p>
+                    <span>全选</span>
+                    <span>共计:</span>
+                    <span id="total_price">{{ totalprice }}</span>
+                </p>
+
+                <span id="make_order"><a href="">下单</a></span>
+            </div>
+
+        </section>
+
+
+    </div>
+</div>
+    <script>
+    function cacl() {
+    {#    遍历所有商品#}
+        var totalprice = 0;
+
+        {#设置标志位，判断$('.menuList').each()是否为空，避免购物车商品全部移除时总价不清零#}
+        var flag = 0;
+        $('.menuList').each(function () {
+        {#    筛选出选中的商品#}
+            flag = 1;
+            if($(this).find('.select_check').prop('checked')){
+                var price = parseFloat($(this).find('.cartPrice').text());
+                var num = parseInt($(this).find('.cartCount').text());
+                {#计算总价#}
+                totalprice += price*num
+            }
+        {#    将totalprice赋值给总价#}
+            $('#total_price').text(totalprice.toFixed(2));
+        });
+        if(flag === 0){
+            $('#total_price').text(0);
+        }
+    }
+
+    function show_all_selected(){
+        var flag = true;
+        $('.select_check').each(function () {
+
+            if (!$(this).prop('checked')) {
+                flag = false;
+                return false;
+            }
+        });
+        if(flag){
+            $('.select_all_check').prop('checked',true)
+        }else{
+            $('.select_all_check').prop('checked',false)
+        }
+    }
+
+    $(function(){
+        {#商品增加的点击事件#}
+        $(".addShopping").click(function () {
+            {#找到商品数量#}
+            var num = parseInt($(this).siblings("span").text());
+            {#console.log(typeof num);#}
+            num += 1;
+            $(this).siblings("span").text(num);
+
+
+            {#获取商品id和数量#}
+            var gid = $(this).attr("goodsid");
+            var count = num;
+
+            {#计算总价#}
+            cacl();
+
+            $.ajax({
+                url:{% url 'market:savadata' %},
+                type:'post',
+                data:{
+                    "gid" : gid,
+                    "count" : count
+                },
+                dataType : 'json',
+                headers : {'X-CSRFToken':'{{  csrf_token  }}'},
+                success : function (data) {
+
+                }
+            })
+        });
+
+        {#商品减少的点击事件#}
+        $(".subShopping").click(function () {
+            {#找到商品数量#}
+            var num = parseInt($(this).siblings("span").text());
+            {#console.log(typeof num);#}
+
+            num -= 1;
+
+            {#判断商品数量，如果为零，将其移除#}
+            if (num == 0){
+                $(this).parent().parent().remove();
+                show_all_selected();
+            }
+
+
+            $(this).siblings("span").text(num);
+
+            {#获取商品id和数量#}
+            var gid = $(this).attr("goodsid");
+            var count = num;
+
+            {#计算总价#}
+            cacl();
+
+            $.ajax({
+                url:'{% url "market:savadata" %}',
+                type:'post',
+                data:{
+                    "gid" : gid,
+                    "count" : count
+                },
+                dataType : 'json',
+                headers : {'X-CSRFToken':'{{  csrf_token  }}'},
+                success : function (data) {
+
+                }
+            })
+        });
+
+        $('.select_check').click(function () {
+            {# 将商品id和选中状态以及数量传递给后端 #}
+            var gid = $(this).attr('goodsid');
+            var count = $(this).parent().parent().find('.cartCount').text();
+            var selected = $(this).prop('checked') ? '1' : '0';
+
+            {#计算总价#}
+            cacl();
+            {#判断全选状态栏状态#}
+            show_all_selected();
+
+            $.ajax({
+                url : '{% url "market:savadata" %}',
+                type : 'post',
+                dataType : 'json',
+                headers : {'X-CSRFToken':"{{ csrf_token }}"},
+                data : {
+                    'gid' : gid,
+                    'count' : count,
+                    'selected' : selected
+                },
+                success : function (data) {
+                    
+                }
+            })
+
+        });
+
+
+
+        $('.select_all_check').click(function () {
+            {#同步全选框和所有子选框#}
+            $('.select_check').prop('checked',$(this).prop('checked'));
+
+            var selected = $(this).prop('checked') ? '1' : '0';
+
+            {#计算总价#}
+            cacl();
+             {#同步cookie中的selected状态#}
+            $.ajax({
+                url : '{% url "carts:selects" %}',
+                type : 'post',
+                dataType : 'json',
+                headers : {'X-CSRFToken':"{{ csrf_token }}"},
+                data : {
+                    'selected' : selected
+                },
+                success : function (data) {
+
+                }
+            })
+        });
+
+    });
+
+    </script>
+{% endblock %}
