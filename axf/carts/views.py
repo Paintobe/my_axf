@@ -2,15 +2,20 @@ import json
 
 from django.http import HttpResponse
 from django.shortcuts import render
+from django_redis import get_redis_connection
 
 # Create your views here.
 from market.models import Goods
 
 
 def index(request):
-
-    #取出cookie中的数据
-    data = request.COOKIES.get('cookie_data')
+    if request.session.get('username'):
+        username = request.session.get('username')
+        redis_cli = get_redis_connection('cart')
+        data = redis_cli.get(f'cart_{username}')
+    else:
+        #取出cookie中的数据
+        data = request.COOKIES.get('cookie_data')
 
     #初始化总价
     totalprice = 0
@@ -44,6 +49,7 @@ def index(request):
 def selects(request):
     #获取selects的值
     selected = request.POST.get('selected')
+
     #获取cookie_data值
     cookie_data = request.COOKIES.get('cookie_data')
 

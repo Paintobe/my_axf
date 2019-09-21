@@ -5,6 +5,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from market.models import FoodType, Goods
+from django_redis import get_redis_connection
 
 
 def index(request,typeid,twoid,sortid):
@@ -72,14 +73,25 @@ def index(request,typeid,twoid,sortid):
 
 
 def savadata(request):
+
     #接受数据
     gid = request.POST.get('gid')
     count = request.POST.get('count')
     selected = request.POST.get('selected','1')#默认选中
     # print(gid,count,selected)
 
-    #判断cookie中数据，有数据相同需要覆盖，没有需要新增
-    cookie_data = request.COOKIES.get('cookie_data')
+
+    #判断用户是否登录
+    if request.session.get('username'):
+        username = request.session.get('username')
+
+        #取出redis中购物车数据
+        redis_cli = get_redis_connection('cart')
+        cookie_data = redis_cli.get(f'cart_{username}')
+
+    else:
+        #判断cookie中数据，有数据相同需要覆盖，没有需要新增
+        cookie_data = request.COOKIES.get('cookie_data')
 
 
     if cookie_data:
@@ -100,5 +112,10 @@ def savadata(request):
     cookie_data = json.dumps(cookie_data)
     res = JsonResponse({'data':'ok'})
 
-    res.set_cookie('cookie_data',cookie_data)
+    if request.session.get('username'):
+        #用户登录状态，设置session，将商品数据存在redis中
+        redis_cli.set(f'cart_{username}',cookie_data)
+    else:
+        #用户未登录，设置cookie
+        res.set_cookie('cookie_data',cookie_data)
     return res

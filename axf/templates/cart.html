@@ -84,7 +84,7 @@
                     <span id="total_price">{{ totalprice }}</span>
                 </p>
 
-                <span id="make_order"><a href="">下单</a></span>
+                <span id="make_order"><a href="{% url 'orders:index' %}">下单</a></span>
             </div>
 
         </section>
@@ -93,6 +93,9 @@
     </div>
 </div>
     <script>
+
+{#    页面刷新时判断选中栏状态#}
+    show_all_selected();
     function cacl() {
     {#    遍历所有商品#}
         var totalprice = 0;

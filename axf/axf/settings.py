@@ -40,7 +40,9 @@ INSTALLED_APPS = [
 
     'contents',   #首页
     'market',   #闪购页面
-    'carts'  #购物车页面
+    'carts',  #购物车页面
+    'orders',  #订单子应用
+    'users',  #用户子应用
 ]
 
 MIDDLEWARE = [
@@ -130,3 +132,41 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static')
 ]
+
+# 文件上传的静态路径
+MEDIA_ROOT = os.path.join(BASE_DIR,'static')
+
+
+# 配置redis缓存
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": "000000"
+        }
+    },
+    "session": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/2",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": "000000"
+        }
+    },
+    "cart": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": "000000"
+        }
+    }
+}
+
+
+# 更改session的存储方式为内存存储
+# SESSION_ENGINE = "django.contrib.sessions.backends.db"  #默认为db存储
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "session"   #将session保存在redis的库2中
