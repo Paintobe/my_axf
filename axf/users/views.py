@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.urls import reverse
 
 from common.func import cookieTORedis
+from orders.models import OrderDetail
 from users.models import User
 import requests
 from django.http import HttpResponse, JsonResponse
@@ -25,7 +26,7 @@ def login(request):
 
         request.session['username'] = username
 
-        res = HttpResponse('登录成功')
+        res = redirect(reverse('users:info'))
 
         return cookieTORedis(request,res)
 
@@ -120,3 +121,38 @@ def sendsms(request):
         return JsonResponse({'res': 'yes'})
     else:
         return JsonResponse({'res': 'no'})
+
+
+def info(request):
+    #判断用户是否登录
+    login = False
+    user = ''
+    no_pay = 0
+    no_receive = 0
+    if request.session.get('username'):
+        username = request.session.get('username')
+        user = User.objects.get(username=username)
+
+        print(user.avatar)
+
+        #查询物品状态，1为未付款，3为未收货
+        no_pay = OrderDetail.objects.filter(uid=user.id, status=1).count()
+        no_receive = OrderDetail.objects.filter(uid=user.id, status=3).count()
+        print(no_pay,no_receive)
+        login = True
+
+    context = {
+        'login' : login,
+        'user' : user,
+        'no_pay' : no_pay,
+        'no_receive' : no_receive
+    }
+
+    return render(request,'mine.html',context)
+
+
+def logout(request):
+
+    #退出登录,清除session
+    del request.session['username']
+    return redirect(reverse('users:login'))

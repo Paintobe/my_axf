@@ -47,7 +47,7 @@ def cookieTORedis(request,response):
 
         response.delete_cookie('cookie_data')
 
-        return response
+    return response
 
 
 

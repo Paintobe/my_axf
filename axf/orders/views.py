@@ -1,4 +1,5 @@
 import json
+import time
 from datetime import datetime
 
 from django.db import transaction
@@ -8,7 +9,7 @@ from django.shortcuts import render, redirect
 from django_redis import get_redis_connection
 
 from market.models import Goods
-from .models import Order,OrderDetail
+from .models import Order, OrderDetail
 
 from users.models import User
 
@@ -50,44 +51,65 @@ def index(request):
         order_code = datetime.now().strftime('%Y%m%d%H%M%S')+str(user.id)
 
         order = Order.objects.create(
-            uid = user.id,
-            order_code = order_code,
-            total_count = sum(cart_dict.values()),
-            total_amount = 0,
-            status = 1
-
+            uid=user.id,
+            order_code=order_code,
+            total_count=sum(cart_dict.values()),
+            total_amount=0,
+            status=1
         )
 
         #生成子订单
 
         totalcount = 0
         for gid,count in cart_dict.items():
-            #判断库存
-            good = Goods.objects.get(id = gid)
 
-            if count > good.storenums:
+            # 判断库存
+            # 悲观锁
+            # good = Goods.objects.select_for_update().get(id=gid)
 
-                transaction.savepoint_rollback(save_id)
-                return HttpResponse("库存不足")
+            while True:
 
-            good.storenums -= count
-            good.productnum += count
-            good.save()
+                good = Goods.objects.get(id=gid)
 
-            order_detail = OrderDetail.objects.create(
-                uid = user.id,
-                order_code = order_code,
-                goods_id = gid,
-                counts = count,
-                price = good.price
-            )
+                if count > good.storenums:
 
-            totalcount += count * good.price
+                    transaction.savepoint_rollback(save_id)
+                    return HttpResponse("库存不足")
 
-            #清除redis中数据
-            del cart_data[str(gid)]
+                # time.sleep(5)
+
+                # 乐观锁，减库存的时候判断，当前的库存是否等于之前查询过的库存
+                res = Goods.objects.filter(id=good.id, storenums=good.storenums).update(
+                    storenums=good.storenums - count,
+                    productnum=good.productnum + count
+                )
+
+                # 如果没有更新成功
+                if not res:
+                    continue  # 如果库存够，并发执行失败后，让他从新执行
+
+                # good.storenums -= count
+                # good.productnum += count
+                # good.save()
+                print(gid,count)
+
+                OrderDetail.objects.create(
+                    uid=user.id,
+                    order_code=order_code,
+                    goods_id=gid,
+                    counts=count,
+                    price=good.price
+                )
+
+                totalcount += count * good.price
+
+                #清除redis中数据
+                del cart_data[str(gid)]
+
+                break
 
         order.total_amount = totalcount
+        order.save()
 
         #重新添加redis数据
         redis_cli.set(f'cart_{username}',json.dumps(cart_data))
@@ -95,7 +117,7 @@ def index(request):
         #提交事务
         transaction.savepoint_commit(save_id)
 
-    return HttpResponse('订单生成成功')
+    return redirect(reverse('users:info'))
 
 
 

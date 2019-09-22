@@ -1,57 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title></title>
+{% extends 'base.html' %}
 
-    <link rel="stylesheet" href="static/css/bootstrap.css">
-    <link rel="stylesheet" href="static/css/swiper.css">
-    <link rel="stylesheet" href="static/css/reset.css">
-    <link rel="stylesheet" href="static/axf/main/css/main.css">
-    <script type="text/javascript" src="static/js/jquery.js"></script>
-    <script type="text/javascript" src="static/js/bootstrap.js"></script>
-    <script type="text/javascript" src="static/js/base.js"></script>
+{% block jscss %}
 
 
+    <link rel="stylesheet" href="/static/axf/main/css/mine.css">
+
+{% endblock %}
 
 
-    <link rel="stylesheet" href="static/axf/main/css/mine.css">
-
-
-</head>
-
-
-<body>
-
-<header></header>
-
+{% block main %}
 
 
     <div id="mine">
         <div class="fixed">
-            <span>
-
-                    <!-- login-->
-                    <!--  <img class="u_icon" src="" alt="">-->
-
+            {% if login %}
+                <span>
+                        <img class="u_icon" src="{{ user.avatar }}" alt="">
+                </span>
+                    <p>{{ user.username }}</p>
+            {% else %}
                     <span class="glyphicon glyphicon-user"></span>
-
-            </span>
-
-                <!-- <p>mock</p>-->
-
-                <p id="not_login">未登录</p>
-
+                    <p id="not_login"><a href="{% url 'users:login' %}">未登录</a></p>
+            {% endif %}
 
             <p>
                 <span class="glyphicon glyphicon-fire"></span>
                 <span>等级</span>
             </p>
 
+                {% if not login %}
 
-                <div id="regis">注册</div>
+                <div id="regis"><a href="{% url 'users:register' %}">注册</a></div>
 
+                {% endif %}
 
             <p>
                 <span class="glyphicon glyphicon-heart"></span>
@@ -69,11 +50,11 @@
             <nav id="nav">
                 <ul>
                     <li id="not_pay">
-
+                        {% if login %}
                             <span class="badge">
-                                2
-                        </span>
-
+                                {{ no_pay }}
+                            </span>
+                        {% endif %}
                         <dl>
                             <dt>
                                 <span class="glyphicon glyphicon-usd"></span>
@@ -82,10 +63,12 @@
                         </dl>
                     </li>
                     <li>
-
+                        {% if login %}
                             <span class="badge">
-                                2
-                         </span>
+                                {{ no_receive }}
+                            </span>
+
+                        {% endif %}
 
                         <dl>
                             <dt>
@@ -157,54 +140,14 @@
                 </ul>
             </menu>
 
-<!--                <p>-->
-<!--                    <a href="{% url 'axf:logout' %}">退出</a>-->
-<!--                </p>-->
+                <p>
+                    <a href="{% url 'users:logout' %}">退出</a>
+                </p>
 
 
         </div>
 
     </div>
+{% endblock %}
 
 
-
-
-<footer>
-    <a href="" class="home">
-        <dl>
-            <dt>
-                <span></span>
-            </dt>
-            <dd>首页</dd>
-        </dl>
-    </a>
-    <a href="" class="market">
-        <dl>
-            <dt>
-                <span></span>
-            </dt>
-            <dd>闪购</dd>
-        </dl>
-    </a>
-    <a href="" class="cart">
-        <dl>
-            <dt>
-                <span></span>
-            </dt>
-            <dd>购物车</dd>
-        </dl>
-    </a>
-    <a href="" class="mine_icon">
-        <dl>
-            <dt>
-                <span></span>
-            </dt>
-            <dd>我的</dd>
-        </dl>
-    </a>
-</footer>
-
-
-
-</body>
-</html>
