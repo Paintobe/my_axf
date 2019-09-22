@@ -49,9 +49,14 @@ def index(request):
 def selects(request):
     #获取selects的值
     selected = request.POST.get('selected')
+    if request.session.get('username'):
+        username = request.session.get('username')
+        redis_cli = get_redis_connection('cart')
+        cookie_data = redis_cli.get(f'cart_{username}')
 
-    #获取cookie_data值
-    cookie_data = request.COOKIES.get('cookie_data')
+    else:
+        #获取cookie_data值
+        cookie_data = request.COOKIES.get('cookie_data')
 
     #将cookie_data转为字典形式
     cookie_data = json.loads(cookie_data)
@@ -64,6 +69,10 @@ def selects(request):
 
     #重设cookie_data
     res = HttpResponse({'data':'ok'})
-    res.set_cookie('cookie_data',cookie_data)
+
+    if request.session.get('username'):
+        redis_cli.set(f'cart_{username}',cookie_data)
+    else:
+        res.set_cookie('cookie_data',cookie_data)
 
     return res

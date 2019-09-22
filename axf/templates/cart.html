@@ -84,7 +84,7 @@
                     <span id="total_price">{{ totalprice }}</span>
                 </p>
 
-                <span id="make_order"><a href="{% url 'orders:index' %}">下单</a></span>
+                <span id="make_order"><a href="{% url 'orders:index' %}" id="add_order">下单</a></span>
             </div>
 
         </section>
@@ -257,6 +257,21 @@
 
                 }
             })
+        });
+
+        {#判断购物车物品是否为全部未选中状态，若为全部未选中，则禁止跳转#}
+        $('#add_order').click(function () {
+            var flag = true;
+            $('.select_check').each(function () {
+
+                if ($(this).prop('checked')) {
+                    flag = false;
+                    return true;
+                }
+            });
+            if(flag){
+                return false;
+            }
         });
 
     });

@@ -3,6 +3,7 @@ import random
 from django.contrib.auth.hashers import make_password, check_password
 from django.urls import reverse
 
+from common.func import cookieTORedis
 from users.models import User
 import requests
 from django.http import HttpResponse, JsonResponse
@@ -24,7 +25,9 @@ def login(request):
 
         request.session['username'] = username
 
-        return HttpResponse('登录成功')
+        res = HttpResponse('登录成功')
+
+        return cookieTORedis(request,res)
 
     else:
         return render(request,'login.html')
