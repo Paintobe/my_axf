@@ -15,7 +15,7 @@
         <div class="fixed">
             {% if login %}
                 <span>
-                        <img class="u_icon" src="{{ user.avatar }}" alt="">
+                    <img class="u_icon" src="{{ jpg_show }}" alt="">
                 </span>
                     <p>{{ user.username }}</p>
             {% else %}
@@ -52,19 +52,26 @@
                     <li id="not_pay">
                         {% if login %}
                             <span class="badge">
+{#                                {{ no_pay_count }}#}
                                 {{ no_pay }}
+
                             </span>
                         {% endif %}
                         <dl>
                             <dt>
                                 <span class="glyphicon glyphicon-usd"></span>
                             </dt>
-                            <dd>待付款</dd>
+                            {% if login %}
+                                <dd><a href="{% url 'orders:not_pay' %}">待付款</a></dd>
+                            {% else %}
+                                <dd>待付款</dd>
+                            {% endif %}
                         </dl>
                     </li>
                     <li>
                         {% if login %}
                             <span class="badge">
+{#                                {{ no_receive_count }}#}
                                 {{ no_receive }}
                             </span>
 

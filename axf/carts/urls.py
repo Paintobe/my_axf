@@ -4,5 +4,5 @@ from . import views
 
 urlpatterns = [
     url(r'^cart/$',views.index,name='index'),
-    url(r'^selects$',views.selects,name='selects')
+    url(r'^selects/$',views.selects,name='selects')
 ]

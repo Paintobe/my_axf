@@ -91,7 +91,7 @@ def index(request):
                 # good.storenums -= count
                 # good.productnum += count
                 # good.save()
-                print(gid,count)
+                # print(gid,count)
 
                 OrderDetail.objects.create(
                     uid=user.id,
@@ -120,4 +120,58 @@ def index(request):
     return redirect(reverse('users:info'))
 
 
+def not_pay(request):
+
+    #查询当前用户所有的未付款的订单总表
+    username = request.session.get('username')
+    user = User.objects.get(username=username)
+    orders = Order.objects.filter(uid=user.id,status=1)
+
+    #组装数据
+    data_dict = {}
+    for order in orders:
+        data_list = []
+        orderDetails = OrderDetail.objects.filter(order_code=order.order_code)
+        for orderDetail in orderDetails:
+            good = Goods.objects.get(id=orderDetail.goods_id)
+            data = {
+                'img':good.productimg,
+                'name':good.productlongname,
+                'price':orderDetail.price,
+                'count':orderDetail.counts
+            }
+            data_list.append(data)
+        data_dict[order.order_code] = data_list
+
+    context = {
+        'data_dicts':data_dict
+    }
+
+    return render(request,'order_list_not_pay.html',context)
+
+
+def order_pay(request,order_code):
+
+    #查询对应总订单的所有子订单
+    order = Order.objects.get(order_code=order_code)
+
+    data_list = []
+    orderDetails = OrderDetail.objects.filter(order_code=order.order_code)
+    for orderDetail in orderDetails:
+        good = Goods.objects.get(id=orderDetail.goods_id)
+        data = {
+            'img': good.productimg,
+            'name': good.productlongname,
+            'price': orderDetail.price,
+            'count': orderDetail.counts
+        }
+        data_list.append(data)
+
+    context = {
+        'data_list':data_list,
+        'total_amount':order.total_amount,
+        'order_code':int(order_code)
+    }
+
+    return render(request,'order_detail.html',context)
 

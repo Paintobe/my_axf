@@ -3,8 +3,9 @@ import random
 from django.contrib.auth.hashers import make_password, check_password
 from django.urls import reverse
 
+from axf.settings import STATIC_URL
 from common.func import cookieTORedis
-from orders.models import OrderDetail
+from orders.models import Order
 from users.models import User
 import requests
 from django.http import HttpResponse, JsonResponse
@@ -127,25 +128,40 @@ def info(request):
     #判断用户是否登录
     login = False
     user = ''
+    # no_pay_count = 0
+    # no_receive_count = 0
     no_pay = 0
     no_receive = 0
+    jpg_path = ''
     if request.session.get('username'):
+        login = True
         username = request.session.get('username')
         user = User.objects.get(username=username)
 
-        print(user.avatar)
+        # print(user.avatar)
 
         #查询物品状态，1为未付款，3为未收货
-        no_pay = OrderDetail.objects.filter(uid=user.id, status=1).count()
-        no_receive = OrderDetail.objects.filter(uid=user.id, status=3).count()
-        print(no_pay,no_receive)
-        login = True
+
+        no_pay = Order.objects.filter(uid=user.id, status=1).count()
+        # obj_no_pay = Order.objects.get(uid=user.id, status=1)
+        # no_pay_order_code = obj_no_pay.order_code
+        # no_pay_count = OrderDetail.objects.filter(order_code=int(no_pay_order_code)).count()
+
+        no_receive = Order.objects.filter(uid=user.id, status=3).count()
+        # obj_no_receive = Order.objects.get(uid=user.id, status=3)
+        # no_receive_order_code = obj_no_receive.order_code
+        # no_receive_count = OrderDetail.objects.filter(order_code=int(no_receive_order_code)).count()
+        jpg_path = STATIC_URL+str(user.avatar)
+
 
     context = {
         'login' : login,
         'user' : user,
-        'no_pay' : no_pay,
-        'no_receive' : no_receive
+        'no_pay': no_pay,
+        'no_receive': no_receive,
+        'jpg_show':jpg_path
+        # 'no_pay_count' : no_pay_count,
+        # 'no_receive_count' : no_receive_count
     }
 
     return render(request,'mine.html',context)
