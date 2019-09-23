@@ -109,7 +109,12 @@
                             <dt>
                                 <span class="glyphicon glyphicon-envelope"></span>
                             </dt>
-                            <dd>我的邮箱</dd>
+                            {% if login %}
+                                <dd><a href="{% url 'users:email' %}">我的邮箱</a></dd>
+                            {% else %}
+                                <dd>我的邮箱</dd>
+                            {% endif %}
+
                         </dl>
                     </li>
                     <li>

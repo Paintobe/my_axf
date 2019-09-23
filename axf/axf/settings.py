@@ -170,3 +170,13 @@ CACHES = {
 # SESSION_ENGINE = "django.contrib.sessions.backends.db"  #默认为db存储
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"   #将session保存在redis的库2中
+
+
+
+#配置邮件服务器
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # 指定邮件后端
+EMAIL_HOST = 'smtp.163.com' # 发邮件主机
+EMAIL_PORT = 25 # 发邮件端口
+EMAIL_HOST_USER = 'shuliming98@163.com' # 授权的邮箱
+EMAIL_HOST_PASSWORD = '163com' # 邮箱授权时获得的密码，非注册登录密码
+EMAIL_FROM = 'xiabai<shuliming98@163.com>' # 发件人抬头

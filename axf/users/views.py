@@ -1,8 +1,10 @@
 import random
 
+
 from django.contrib.auth.hashers import make_password, check_password
 from django.urls import reverse
 
+from axf import settings
 from axf.settings import STATIC_URL
 from common.func import cookieTORedis
 from orders.models import Order
@@ -10,6 +12,7 @@ from users.models import User
 import requests
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
+from django.core.mail import send_mail
 
 # Create your views here.
 from django_redis import get_redis_connection
@@ -141,16 +144,9 @@ def info(request):
         # print(user.avatar)
 
         #查询物品状态，1为未付款，3为未收货
-
         no_pay = Order.objects.filter(uid=user.id, status=1).count()
-        # obj_no_pay = Order.objects.get(uid=user.id, status=1)
-        # no_pay_order_code = obj_no_pay.order_code
-        # no_pay_count = OrderDetail.objects.filter(order_code=int(no_pay_order_code)).count()
-
         no_receive = Order.objects.filter(uid=user.id, status=3).count()
-        # obj_no_receive = Order.objects.get(uid=user.id, status=3)
-        # no_receive_order_code = obj_no_receive.order_code
-        # no_receive_count = OrderDetail.objects.filter(order_code=int(no_receive_order_code)).count()
+
         jpg_path = STATIC_URL+str(user.avatar)
 
 
@@ -172,3 +168,46 @@ def logout(request):
     #退出登录,清除session
     del request.session['username']
     return redirect(reverse('users:login'))
+
+
+def email(request):
+
+    if request.method == "GET":
+        username = request.session.get('username')
+        user = User.objects.get(username=username)
+        context = {
+            'user':user
+        }
+        return render(request,'email.html',context)
+    else:
+        email = request.POST.get('email')
+        # print('email=',email)
+        type = request.POST.get('type')
+
+        if type == '1':
+            #保存邮箱操作
+            username = request.session.get('username')
+            User.objects.filter(username=username).update(email=email)
+
+            return redirect(reverse('users:email'))
+
+        elif type == '2':
+            #激活邮箱操作
+            # 发送邮件
+            email = request.POST.get('email_active')
+            to_email = email
+            print('email_active=',email)
+            verify_url = 'http://127.0.0.1:8000/active/?email=' + email
+            print(verify_url)
+            subject = "激活邮箱"
+            html_message = '<p>尊敬的用户您好！</p>' \
+                           '<p>您的邮箱为：%s 。请点击此链接激活您的邮箱：</p>' \
+                           '<p><a href="%s">%s<a></p>' % (to_email, verify_url, verify_url)
+
+
+            send_mail(subject, "", settings.EMAIL_FROM, [to_email], html_message=html_message)
+
+            return HttpResponse('邮箱发送成功，请点击激活')
+
+def active(request):
+    return None

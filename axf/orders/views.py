@@ -24,7 +24,6 @@ def index(request):
     if not request.session.get('username'):
         return redirect(reverse('users:login'))
 
-
     #生成订单逻辑
     #取出redis中购物数据
     redis_cli = get_redis_connection('cart')
@@ -111,13 +110,16 @@ def index(request):
         order.total_amount = totalcount
         order.save()
 
+
         #重新添加redis数据
         redis_cli.set(f'cart_{username}',json.dumps(cart_data))
 
         #提交事务
         transaction.savepoint_commit(save_id)
 
-    return redirect(reverse('users:info'))
+
+
+    return redirect(reverse('orders:order_pay',args=(order_code,)))
 
 
 def not_pay(request):
