@@ -1,18 +1,16 @@
 import random
 
-
 from django.contrib.auth.hashers import make_password, check_password
 from django.urls import reverse
 
-from axf import settings
 from axf.settings import STATIC_URL
-from common.func import cookieTORedis
+from common.func import cookieTORedis, send_email
 from orders.models import Order
 from users.models import User
 import requests
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
-from django.core.mail import send_mail
+
 
 # Create your views here.
 from django_redis import get_redis_connection
@@ -195,19 +193,14 @@ def email(request):
             #激活邮箱操作
             # 发送邮件
             email = request.POST.get('email_active')
-            to_email = email
-            print('email_active=',email)
-            verify_url = 'http://127.0.0.1:8000/active/?email=' + email
-            print(verify_url)
-            subject = "激活邮箱"
-            html_message = '<p>尊敬的用户您好！</p>' \
-                           '<p>您的邮箱为：%s 。请点击此链接激活您的邮箱：</p>' \
-                           '<p><a href="%s">%s<a></p>' % (to_email, verify_url, verify_url)
 
-
-            send_mail(subject, "", settings.EMAIL_FROM, [to_email], html_message=html_message)
+            send_email.delay(email)  #将任务放入队列
 
             return HttpResponse('邮箱发送成功，请点击激活')
 
 def active(request):
-    return None
+    #接收邮箱，激活邮箱
+    email = request.GET.get('email')
+    User.objects.filter(email=email).update(is_active=1)
+
+    return redirect(reverse('users:email'))
